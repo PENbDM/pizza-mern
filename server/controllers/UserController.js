@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import User from "../models/User.js";
@@ -14,8 +14,8 @@ export const register = async (req, res) => {
         message: "This email already exists",
       });
     }
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
+    const salt = await bcryptjs.genSalt(10);
+    const hash = await bcryptjs.hash(password, salt);
 
     const doc = new User({
       email: email,
@@ -58,7 +58,7 @@ export const login = async (req, res) => {
         message: "Wrong email or password",
       });
     }
-    const isValidPass = await bcrypt.compare(
+    const isValidPass = await bcryptjs.compare(
       req.body.password,
       user._doc.passwordHash
     );
