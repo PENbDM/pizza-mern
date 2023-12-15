@@ -9,11 +9,12 @@ import handleValidationErrors from "./utils/handleValidationErrors.js";
 import "dotenv/config";
 mongoose
   .connect(process.env.MONGODB_URI)
-  // "mongodb+srv://dimapen2002:12Dimabob122@cluster0.rnqnljn.mongodb.net/React-Pizza"
   .then(() => {
     console.log("DB OK");
   })
-  .catch((err) => console.log("DB ERROR", err));
+  .catch((err) => {
+    console.error("DB ERROR:", err);
+  });
 
 const app = express();
 app.use(express.json());
