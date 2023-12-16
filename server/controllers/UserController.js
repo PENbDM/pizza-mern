@@ -1,4 +1,4 @@
-import bcryptjs from "bcryptjs";
+import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import User from "../models/User.js";
@@ -14,13 +14,15 @@ export const register = async (req, res) => {
         message: "This email already exists",
       });
     }
-    const salt = await bcryptjs.genSalt(10);
-    const hash = await bcryptjs.hash(password, salt);
+    const encryptedPassword = CryptoJS.AES.encrypt(
+      password,
+      process.env.PASS_SEC
+    ).toString();
 
     const doc = new User({
       email: email,
       fullName: req.body.fullName,
-      passwordHash: hash,
+      passwordHash: encryptedPassword,
     });
     const user = await doc.save();
     //create new user,after getting all fields
@@ -58,15 +60,22 @@ export const login = async (req, res) => {
         message: "Wrong email or password",
       });
     }
+
+    const decryptedPassword = CryptoJS.AES.decrypt(
+      user.passwordHash,
+      process.env.PASS_SEC
+    ).toString(CryptoJS.enc.Utf8);
+
     const isValidPass = await bcryptjs.compare(
       req.body.password,
       user._doc.passwordHash
     );
-    if (!isValidPass) {
+    if (decryptedPassword !== req.body.password) {
       return res.status(403).json({
         message: "Wrong email or password",
       });
     }
+
     const token = jwt.sign(
       {
         _id: user._id,
