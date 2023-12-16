@@ -7,7 +7,7 @@ import { Routes, Route } from "react-router-dom";
 import FullPizza from "./pages/FullPizza";
 import Sign from "./components/Sign";
 import User from "./pages/User";
-export const URL = "https://mern-pizza-app-api.onrender.com";
+export const URL = "https://pizza-mern-green.vercel.app";
 function App() {
   return (
     <div className="wrapper">
