@@ -203,6 +203,8 @@ function Sign() {
                 Login{" "}
               </button>
             </div>
+              <p className="demo">email: demo@gmail.com</p>
+            <p>password: demo12demo12</p>
           </form>
         </div>
       )}
