@@ -4,28 +4,27 @@ import { validationResult } from "express-validator";
 import User from "../models/User.js";
 export const register = async (req, res) => {
   try {
-    const password = req.body.password;
-    const email = req.body.email;
+    const { fullName, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      // Если пользователь с таким email уже существует, возвращаем ошибку
       return res.status(400).json({
         message: "This email already exists",
       });
     }
     const encryptedPassword = CryptoJS.AES.encrypt(
       password,
-      process.env.PASS_SEC
+      "secretCode"
     ).toString();
 
-    const doc = new User({
-      email: email,
-      fullName: req.body.fullName,
+    const user = new User({
+      email,
+      fullName,
       passwordHash: encryptedPassword,
     });
-    const user = await doc.save();
-    //create new user,after getting all fields
+
+    await user.save();
+
     const token = jwt.sign(
       {
         _id: user._id,
@@ -35,13 +34,16 @@ export const register = async (req, res) => {
         expiresIn: "30d",
       }
     );
+
+    const { passwordHash, ...userData } = user._doc;
     // //here we creating token using the jwt.sign, our token gonna store user._id,
     // becouse in our token exist id, after when i goonna uncipher token , after i can use this info to check
     // if user Auth , to understand who is user
-    const { passwordHash, ...userData } = user._doc;
+    // const { passwordHash, ...userData } = user._doc;
     //here we using disctracture to take out passwordHash from user._doc, so to make respond with out passwordHash
     res.json({ ...userData, token, message: "Register successfully" });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: "Could not register",
     });
@@ -63,19 +65,14 @@ export const login = async (req, res) => {
 
     const decryptedPassword = CryptoJS.AES.decrypt(
       user.passwordHash,
-      process.env.PASS_SEC
+      "secretCode"
     ).toString(CryptoJS.enc.Utf8);
 
-    const isValidPass = await bcryptjs.compare(
-      req.body.password,
-      user._doc.passwordHash
-    );
     if (decryptedPassword !== req.body.password) {
       return res.status(403).json({
         message: "Wrong email or password",
       });
     }
-
     const token = jwt.sign(
       {
         _id: user._id,
